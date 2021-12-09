@@ -1,6 +1,7 @@
 'use strict';
 
 const threads = require('worker_threads');
+const { ThreadStateError } = require('./exceptions');
 
 const LOCKED = 0;
 const UNLOCKED = 1;
@@ -12,7 +13,8 @@ const INDEX_OF_THREADS = 4;
 
 class AtomicsMutex {
     constructor(shared) {
-        this.shared = new Int32Array(shared, 0, 6);
+        this.shared = new Int32Array(shared, 0, 5);
+        Atomics.store(this.shared, INDEX_OF_LOCKED, UNLOCKED);
     }
 
     lock() {
@@ -30,11 +32,11 @@ class AtomicsMutex {
 
     wait() {
         if (Atomics.load(this.shared, INDEX_OF_LOCKED_THREAD) !== threads.threadId) {
-            throw new Error('ThreadStateException');
+            throw new ThreadStateError('ThreadStateError');
         }
         this.unlock();
         Atomics.store(this.shared, INDEX_OF_THREADS, Atomics.load(this.shared, INDEX_OF_THREADS) + 1);
-        while (!Atomics.load(this.shared, INDEX_OF_NOTIFIED) || !Atomics.load(this.shared, INDEX_OF_NOTIFIED_ALL)) {}
+        while (!Atomics.load(this.shared, INDEX_OF_NOTIFIED) && !Atomics.load(this.shared, INDEX_OF_NOTIFIED_ALL)) {}
         Atomics.store(this.shared, INDEX_OF_THREADS, Atomics.load(this.shared, INDEX_OF_THREADS) - 1);
         this.lock()
         Atomics.store(this.shared, INDEX_OF_NOTIFIED, 0);
@@ -42,7 +44,7 @@ class AtomicsMutex {
 
     notify() {
         if (Atomics.load(this.shared, INDEX_OF_LOCKED_THREAD) !== threads.threadId) {
-            throw new Error('ThreadStateException');
+            throw new ThreadStateError('ThreadStateError');
         }
 
         Atomics.store(this.shared, INDEX_OF_NOTIFIED, 1);
@@ -50,7 +52,7 @@ class AtomicsMutex {
 
     notifyAll() {
         if (Atomics.load(this.shared, INDEX_OF_LOCKED_THREAD) !== threads.threadId) {
-            throw new Error('ThreadStateException');
+            throw new ThreadStateError('ThreadStateError');
         }
 
         Atomics.store(this.shared, INDEX_OF_NOTIFIED_ALL, 1);
@@ -61,3 +63,5 @@ class AtomicsMutex {
 
     }
 }
+
+module.exports = AtomicsMutex;
