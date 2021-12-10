@@ -1,0 +1,23 @@
+{
+  "name": "parallelcomputing",
+  "version": "1.0.0",
+  "description": "",
+  "main": "atomicsMutex.js",
+  "scripts": {
+    "test": "jest --runInBand --coverage --forceExit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Siusarna/ParallelComputing.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Siusarna/ParallelComputing/issues"
+  },
+  "homepage": "https://github.com/Siusarna/ParallelComputing#readme",
+  "dependencies": {},
+  "devDependencies": {
+    "jest": "^27.4.3"
+  }
+}
