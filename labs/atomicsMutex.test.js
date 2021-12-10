@@ -34,9 +34,10 @@ let unlock;
 let wait;
 let notify;
 let notifyAll;
+let buffer;
 describe('AtomicsMutex', () => {
     beforeEach(() => {
-        const buffer = new SharedArrayBuffer(1024);
+        buffer = new SharedArrayBuffer(1024);
         mutex = new AtomicsMutex(buffer);
         lock = jest.spyOn(mutex, 'lock');
         unlock = jest.spyOn(mutex, 'unlock');
@@ -112,8 +113,13 @@ describe('AtomicsMutex', () => {
             }
             undoMockProperty(threads, 'threadId');
         })
+        it('should work as expected with .wait', () => {
+            new threads.Worker(`${__dirname}/utilForTests/callNotifyAll.js`, { workerData: buffer })
+            mutex.wait()
+            expect(mutex.shared[INDEX_OF_NOTIFIED_ALL]).toEqual(0);
+        })
         it('should work as expected', () => {
-            mutex.notifyAll()
+            mutex.notifyAll();
             expect(mutex.shared[INDEX_OF_NOTIFIED_ALL]).toEqual(0);
         })
     })
